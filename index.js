@@ -4,7 +4,7 @@ const multer = require("multer");
 const dotenv = require("dotenv");
 dotenv.config();
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs/promises");
 const cors = require("cors");
 
 const app = express();
@@ -18,21 +18,19 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 // Set up Multer for handling file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: async (req, file, cb) => {
     const uploadDir = path.join(__dirname, "uploads");
-    fs.mkdirSync(uploadDir, { recursive: true });
+    await fs.mkdir(uploadDir, { recursive: true });
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
   },
 });
-
 
 const upload = multer({ storage: storage });
 
@@ -64,6 +62,9 @@ app.post("/send-email", upload.array("files"), async (req, res) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
+
+    // Clean up uploaded files after sending email
+    await Promise.all(attachmentPaths.map((path) => fs.unlink(path)));
 
     res.status(200).json({
       message: "Email sent Successfully",
