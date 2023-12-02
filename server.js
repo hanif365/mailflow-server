@@ -25,8 +25,6 @@ const storage = multer.diskStorage({
   },
 });
 
-console.log(process.env.SMTP_USER);
-console.log(process.env.SMTP_PASSWORD);
 
 const upload = multer({ storage: storage });
 
@@ -45,7 +43,6 @@ app.get("/", (req, res) => {
 
 app.post("/send-email", upload.array("files"), async (req, res) => {
   try {
-    console.log(req.body);
     const { text, receiverEmail } = req.body;
 
     const attachmentPaths = req.files ? req.files.map((file) => file.path) : [];
