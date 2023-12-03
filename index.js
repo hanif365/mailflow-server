@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: "https://mailflow-server1.vercel.app",
+  origin: ["https://mailflow-client.vercel.app", "http://localhost:5173"],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
@@ -50,6 +50,8 @@ app.get("/", (req, res) => {
 app.post("/send-email", upload.array("files"), async (req, res) => {
   try {
     const { text, receiverEmail } = req.body;
+
+    console.log(text, receiverEmail);
 
     const attachmentPaths = req.files ? req.files.map((file) => file.path) : [];
 
